@@ -2,31 +2,37 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class FavoritesService {
-  private readonly STORAGE_KEY = 'poke_app_favorites';
-  private favoritesSubject = new BehaviorSubject<number[]>(this.getStoredFavorites());
-
+  private readonly STORAGE_KEY = 'favorites';
+  private favoritesSubject = new BehaviorSubject<number[]>(this.loadFavoritesFromStorage());
   public favorites$: Observable<number[]> = this.favoritesSubject.asObservable();
 
-  private getStoredFavorites(): number[] {
+  private loadFavoritesFromStorage(): number[] {
     const data = localStorage.getItem(this.STORAGE_KEY);
     return data ? JSON.parse(data) : [];
   }
 
-  toggleFavorite(pokemonId: number): void {
-    const current = this.favoritesSubject.value;
-    const exists = current.includes(pokemonId);
-    const updated = exists
-      ? current.filter((id) => id !== pokemonId)
-      : [...current, pokemonId];
-
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
-    this.favoritesSubject.next(updated);
+  public getFavoritesList(): number[] {
+    return this.favoritesSubject.getValue();
   }
 
-  isFavorite(pokemonId: number): boolean {
-    return this.favoritesSubject.value.includes(pokemonId);
+  public isFavorite(id: number): boolean {
+    return this.getFavoritesList().includes(id);
+  }
+
+  public toggleFavorite(id: number): void {
+    const currentFavorites = this.getFavoritesList();
+    let updatedFavorites: number[];
+
+    if (currentFavorites.includes(id)) {
+      updatedFavorites = currentFavorites.filter(favId => favId !== id);
+    } else {
+      updatedFavorites = [...currentFavorites, id];
+    }
+
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedFavorites));
+    this.favoritesSubject.next(updatedFavorites);
   }
 }

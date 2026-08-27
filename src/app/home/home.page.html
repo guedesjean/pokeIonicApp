@@ -1,51 +1,48 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>🐾 PokéApp</ion-title>
+    <ion-title>Pokédex</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/favorites">
+        <ion-icon slot="icon-only" name="heart" color="light"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar color="primary">
+    <ion-searchbar 
+      placeholder="Pesquisar Pokémon..." 
+      (ionInput)="onSearch($event)"
+      [debounce]="250"
+      animated>
+    </ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  
-  <!-- Loading Inicial -->
-  <div *ngIf="isLoading && pokemons.length === 0" class="ion-text-center ion-padding">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Carregando Pokédex...</p>
-  </div>
-
-  <!-- Grid Responsivo -->
-  <ion-grid *ngIf="pokemons.length > 0">
+  <ion-grid>
     <ion-row>
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let pokemon of pokemons">
-        
-        <ion-card [routerLink]="['/pokemon', pokemon.id]" class="pokemon-card">
-          <div class="card-header-actions">
-            <ion-button fill="clear" (click)="toggleFavorite($event, pokemon.id)">
-              <ion-icon 
-                [name]="favoritesService.isFavorite(pokemon.id!) ? 'star' : 'star-outline'"
-                [color]="favoritesService.isFavorite(pokemon.id!) ? 'warning' : 'medium'">
-              </ion-icon>
-            </ion-button>
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let pokemon of filteredPokemons">
+        <ion-card [routerLink]="['/pokemon', pokemon.id]" button>
+          <div class="image-container">
+            <img [src]="pokemon.imageUrl" [alt]="pokemon.name" loading="lazy" />
           </div>
-
-          <img [src]="pokemon.imageUrl" [alt]="pokemon.name" class="pokemon-image" />
-
           <ion-card-header>
-            <ion-card-title class="ion-text-center">
-              #{{ pokemon.id }} {{ pokemon.name | titlecase }}
-            </ion-card-title>
+            <div class="card-header-content">
+              <ion-card-title>#{{ pokemon.id }} {{ pokemon.name | titlecase }}</ion-card-title>
+              <ion-button fill="clear" size="small" (click)="toggleFavorite($event, pokemon.id)">
+                <ion-icon 
+                  [name]="isPokemonFavorite(pokemon.id) ? 'star' : 'star-outline'" 
+                  [color]="isPokemonFavorite(pokemon.id) ? 'warning' : 'medium'">
+                </ion-icon>
+              </ion-button>
+            </div>
           </ion-card-header>
         </ion-card>
-
       </ion-col>
     </ion-row>
   </ion-grid>
 
-  <!-- Paginação Infinita -->
-  <ion-infinite-scroll (ionInfinite)="loadPokemons($event)">
-    <ion-infinite-scroll-content 
-      loadingSpinner="bubbles" 
-      loadingText="Carregando mais Pokémons...">
+  <ion-infinite-scroll *ngIf="!searchTerm" (ionInfinite)="loadPokemons($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Carregando mais Pokémons...">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
-
 </ion-content>
