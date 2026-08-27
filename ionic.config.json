@@ -1,0 +1,7 @@
+{
+  "name": "pokeIonicApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
