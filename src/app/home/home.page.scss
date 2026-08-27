@@ -1,27 +1,24 @@
-#container {
-  text-align: center;
+.pokemon-card {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
 
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
+  &:hover {
+    transform: translateY(-4px);
+  }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
+  .card-header-actions {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 10;
+  }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
+  .pokemon-image {
+    width: 120px;
+    height: 120px;
+    margin: 16px auto 0 auto;
+    display: block;
+    object-fit: contain;
+  }
 }
