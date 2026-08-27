@@ -1,0 +1,108 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pokemon ? (pokemon.name | titlecase) : 'Detalhes' }}</ion-title>
+    <ion-buttons slot="end" *ngIf="pokemon">
+      <ion-button (click)="toggleFavorite()">
+        <ion-icon 
+          [name]="favoritesService.isFavorite(pokemon.id) ? 'star' : 'star-outline'" 
+          [color]="favoritesService.isFavorite(pokemon.id) ? 'warning' : 'light'">
+        </ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Carregando informações do Pokémon...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="ion-text-center ion-padding">
+    <p color="danger">{{ errorMessage }}</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="pokemon && !isLoading">
+    
+    <!-- Artwork em Alta Resolução -->
+    <div class="ion-text-center pokemon-header-container">
+      <img 
+        [src]="pokemon.sprites.other['official-artwork'].front_default" 
+        [alt]="pokemon.name" 
+        class="pokemon-official-art"
+      />
+      <h2>#{{ pokemon.id }} {{ pokemon.name | titlecase }}</h2>
+    </div>
+
+    <!-- Lista com as Informações Requisitadas -->
+    <ion-list lines="full" class="ion-margin-top">
+      
+      <!-- 1. Tipos -->
+      <ion-item>
+        <ion-label>
+          <h3>Tipos</h3>
+          <p>{{ getTypes() | titlecase }}</p>
+        </ion-label>
+      </ion-item>
+
+      <!-- 2. Altura -->
+      <ion-item>
+        <ion-label>
+          <h3>Altura</h3>
+          <p>{{ pokemon.height / 10 }} m</p>
+        </ion-label>
+      </ion-item>
+
+      <!-- 3. Peso -->
+      <ion-item>
+        <ion-label>
+          <h3>Peso</h3>
+          <p>{{ pokemon.weight / 10 }} kg</p>
+        </ion-label>
+      </ion-item>
+
+      <!-- 4. Habilidades -->
+      <ion-item>
+        <ion-label>
+          <h3>Habilidades</h3>
+          <p>{{ getAbilities() | titlecase }}</p>
+        </ion-label>
+      </ion-item>
+
+      <!-- 5. Status Base -->
+      <ion-item>
+        <ion-label>
+          <h3>Status Base</h3>
+          <ion-grid class="ion-no-padding">
+            <ion-row *ngFor="let stat of pokemon.stats">
+              <ion-col size="6">
+                <strong>{{ stat.stat.name | uppercase }}:</strong>
+              </ion-col>
+              <ion-col size="6">
+                {{ stat.base_stat }}
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-label>
+      </ion-item>
+
+      <!-- 6. Principais Golpes (Moves) -->
+      <ion-item>
+        <ion-label>
+          <h3>Principais Golpes</h3>
+          <p>{{ getMoves() | titlecase }}</p>
+        </ion-label>
+      </ion-item>
+
+    </ion-list>
+
+  </div>
+
+</ion-content>

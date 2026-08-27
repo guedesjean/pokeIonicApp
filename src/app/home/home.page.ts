@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {
@@ -17,7 +17,7 @@ import {
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonSpinner
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { star, starOutline } from 'ionicons/icons';
 import { PokemonService } from '../core/services/pokemon.service';
@@ -52,6 +52,7 @@ import { PokemonListItem } from '../core/models/pokemon.model';
 export class HomePage implements OnInit {
   private pokemonService = inject(PokemonService);
   public favoritesService = inject(FavoritesService);
+  private cdr = inject(ChangeDetectorRef);
 
   public pokemons: PokemonListItem[] = [];
   public offset = 0;
@@ -79,12 +80,17 @@ export class HomePage implements OnInit {
         if (event) {
           event.target.complete();
         }
+
+        // Força o Angular a renderizar a tela imediatamente com os novos Pokémons
+        this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Erro ao carregar pokémons:', err);
         this.isLoading = false;
         if (event) {
           event.target.complete();
         }
+        this.cdr.detectChanges();
       }
     });
   }

@@ -1,0 +1,15 @@
+.pokemon-header-container {
+  padding: 16px 0;
+  
+  .pokemon-official-art {
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
+
+  h2 {
+    font-weight: bold;
+    margin-top: 12px;
+  }
+}
