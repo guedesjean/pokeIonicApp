@@ -1,48 +1,77 @@
 <ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-title>Pokédex</ion-title>
+  <ion-toolbar color="danger">
+    <ion-title class="ion-text-center">Pokédex TCG</ion-title>
     <ion-buttons slot="end">
-      <ion-button routerLink="/favorites">
-        <ion-icon slot="icon-only" name="heart" color="light"></ion-icon>
+      <!-- Tooltip adicionado através da propriedade title -->
+      <ion-button routerLink="/favorites" class="header-fav-btn" title="Ir para os favoritos" aria-label="Ir para os favoritos">
+        <ion-icon name="heart" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar color="primary">
+  <ion-toolbar color="danger">
     <ion-searchbar 
-      placeholder="Pesquisar Pokémon..." 
-      (ionInput)="onSearch($event)"
-      [debounce]="250"
-      animated>
+      [(ngModel)]="searchTerm" 
+      (ionInput)="onSearchChange($event)"
+      placeholder="Buscar por nome ou número..." 
+      animated="true">
     </ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="tcg-bg ion-padding">
+
   <ion-grid>
     <ion-row>
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let pokemon of filteredPokemons">
-        <ion-card [routerLink]="['/pokemon', pokemon.id]" button>
-          <div class="image-container">
-            <img [src]="pokemon.imageUrl" [alt]="pokemon.name" loading="lazy" />
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let pokemon of filteredPokemons; trackBy: trackByPokemonId">
+        
+        <div class="tcg-card" [routerLink]="['/pokemon', pokemon.id]">
+          
+          <div class="card-header-tcg">
+            <span class="card-name">{{ pokemon.name | uppercase }}</span>
+            <span class="card-hp"><small>HP</small> {{ (pokemon.id || 0) * 10 }}</span>
           </div>
-          <ion-card-header>
-            <div class="card-header-content">
-              <ion-card-title>#{{ pokemon.id }} {{ pokemon.name | titlecase }}</ion-card-title>
-              <ion-button fill="clear" size="small" (click)="toggleFavorite($event, pokemon.id)">
-                <ion-icon 
-                  [name]="isPokemonFavorite(pokemon.id) ? 'star' : 'star-outline'" 
-                  [color]="isPokemonFavorite(pokemon.id) ? 'warning' : 'medium'">
-                </ion-icon>
-              </ion-button>
+
+          <div class="card-image-box">
+            <img 
+              [src]="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/' + pokemon.id + '.png'" 
+              [alt]="pokemon.name" 
+              loading="lazy"
+            />
+          </div>
+
+          <div class="card-info-bar">
+            <span>NO. {{ (pokemon.id || 0) | number:'3.0-0' }}</span>
+          </div>
+
+          <div class="card-body-tcg">
+            <div class="attack-row">
+              <span class="energy-icon">★</span>
+              <span class="attack-name">Acessar Pokédex</span>
+              <span class="attack-damage">30</span>
             </div>
-          </ion-card-header>
-        </ion-card>
+          </div>
+
+          <div class="card-footer-tcg">
+            <span>ilus. PokeAPI</span>
+            <button 
+              type="button" 
+              class="fav-btn" 
+              [class.is-favorite]="isFavorite(pokemon.id)"
+              (click)="toggleFavorite($event, pokemon)"
+              title="Favoritar">
+              <ion-icon [name]="isFavorite(pokemon.id) ? 'heart' : 'heart-outline'"></ion-icon>
+            </button>
+          </div>
+
+        </div>
+
       </ion-col>
     </ion-row>
   </ion-grid>
 
-  <ion-infinite-scroll *ngIf="!searchTerm" (ionInfinite)="loadPokemons($event)">
-    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Carregando mais Pokémons...">
+  <ion-infinite-scroll (ionInfinite)="loadMore($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Carregando mais cartas...">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
+
 </ion-content>

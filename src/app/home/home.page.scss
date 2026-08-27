@@ -1,24 +1,176 @@
-.pokemon-card {
-  position: relative;
+.tcg-bg {
+  --background: #2b2b2b;
+}
+
+// Botão de Favoritos no Cabeçalho
+.header-fav-btn {
+  ion-icon {
+    color: #ffffff;
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  }
+}
+
+.tcg-card {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  border: 8px solid #94a3b8;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  padding: 8px;
+  margin: 10px auto;
+  max-width: 280px;
   cursor: pointer;
-  transition: transform 0.2s ease-in-out;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-family: 'Trebuchet MS', sans-serif;
 
   &:hover {
     transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    border-color: #f1c40f;
+  }
+}
+
+.card-header-tcg {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 0 4px;
+
+  .card-name {
+    font-weight: 900;
+    font-size: 0.95rem;
+    color: #1e293b;
+    letter-spacing: -0.5px;
   }
 
-  .card-header-actions {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    z-index: 10;
-  }
+  .card-hp {
+    font-weight: 900;
+    font-size: 0.9rem;
+    color: #dc2626;
 
-  .pokemon-image {
-    width: 120px;
-    height: 120px;
-    margin: 16px auto 0 auto;
-    display: block;
+    small {
+      font-size: 0.65rem;
+      margin-right: 1px;
+    }
+  }
+}
+
+.card-image-box {
+  background: radial-gradient(circle, #ffffff 0%, #e2e8f0 100%);
+  border: 3px solid #64748b;
+  border-radius: 6px;
+  height: 180px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+
+  img {
+    max-height: 165px;
+    width: 100%;
     object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+  }
+}
+
+.card-info-bar {
+  background: #cbd5e1;
+  border: 1px solid #94a3b8;
+  border-radius: 2px;
+  margin: 6px 0;
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #475569;
+}
+
+.card-body-tcg {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 6px;
+
+  .attack-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .energy-icon {
+      background: #f1c40f;
+      color: #333;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    .attack-name {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #1e293b;
+      flex: 1;
+      margin-left: 8px;
+    }
+
+    .attack-damage {
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+  }
+}
+
+.card-footer-tcg {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: bold;
+  padding: 0 4px;
+
+  .fav-btn {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 2px 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ion-icon {
+      font-size: 1.4rem;
+      color: #64748b;
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    &.is-favorite ion-icon {
+      color: #e11d48; // Vermelho intenso para corações favoritados
+    }
+
+    &:hover ion-icon {
+      transform: scale(1.2);
+    }
+  }
+}
+.header-fav-btn {
+  cursor: pointer;
+
+  ion-icon {
+    color: #ffffff;
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    transition: transform 0.2s ease;
+  }
+
+  &:hover ion-icon {
+    transform: scale(1.15);
   }
 }

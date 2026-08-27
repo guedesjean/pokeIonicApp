@@ -1,13 +1,14 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import {
-  IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
-  IonCard, IonCardHeader, IonCardTitle, IonButton, IonIcon,
-  IonInfiniteScroll, IonInfiniteScrollContent, IonSearchbar, IonButtons
+import { 
+  IonHeader, IonToolbar, IonTitle, IonContent, IonSearchbar, 
+  IonGrid, IonRow, IonCol, IonButton, IonIcon, IonButtons,
+  IonInfiniteScroll, IonInfiniteScrollContent
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { star, starOutline, heart } from 'ionicons/icons';
+import { heart, heartOutline } from 'ionicons/icons';
 import { PokemonService } from '../core/services/pokemon.service';
 import { FavoritesService } from '../core/services/favorites.service';
 import { PokemonListItem } from '../core/models/pokemon.model';
@@ -18,10 +19,23 @@ import { PokemonListItem } from '../core/models/pokemon.model';
   styleUrls: ['home.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, RouterModule, IonHeader, IonToolbar, IonTitle, IonContent,
-    IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonButton,
-    IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonSearchbar, IonButtons
-  ],
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonSearchbar,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonButton,
+    IonIcon,
+    IonButtons,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent
+  ]
 })
 export class HomePage implements OnInit {
   private pokemonService = inject(PokemonService);
@@ -30,13 +44,13 @@ export class HomePage implements OnInit {
 
   public pokemons: PokemonListItem[] = [];
   public filteredPokemons: PokemonListItem[] = [];
-  public offset = 0;
-  public limit = 20;
-  public isLoading = false;
-  public searchTerm = '';
+  public searchTerm: string = '';
+  private offset = 0;
+  private limit = 20;
 
   constructor() {
-    addIcons({ star, starOutline, heart });
+    // Registra explicitamente os ícones de coração
+    addIcons({ heart, heartOutline });
   }
 
   ngOnInit() {
@@ -44,53 +58,68 @@ export class HomePage implements OnInit {
   }
 
   loadPokemons(event?: any) {
-    if (this.isLoading && !event) return;
-    this.isLoading = true;
+    this.pokemonService.getPokemonList(this.offset, this.limit).subscribe({
+      next: (res) => {
+        const newPokemons = res.results.map((item) => {
+          const urlParts = item.url.split('/').filter(Boolean);
+          const id = parseInt(urlParts[urlParts.length - 1], 10);
+          return { ...item, id };
+        });
 
-    this.pokemonService.getPokemonList(this.limit, this.offset).subscribe({
-      next: (response) => {
-        this.pokemons = [...this.pokemons, ...response.results];
-        this.applyFilter();
+        this.pokemons = [...this.pokemons, ...newPokemons];
+        this.filterPokemons();
         this.offset += this.limit;
-        this.isLoading = false;
 
-        if (event) event.target.complete();
+        if (event) {
+          event.target.complete();
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erro ao carregar pokémons:', err);
-        this.isLoading = false;
-        if (event) event.target.complete();
+        console.error('Erro ao carregar lista:', err);
+        if (event) {
+          event.target.complete();
+        }
         this.cdr.detectChanges();
       }
     });
   }
 
-  onSearch(event: any) {
-    this.searchTerm = event.detail.value?.toLowerCase() || '';
-    this.applyFilter();
+  loadMore(event: any) {
+    this.loadPokemons(event);
   }
 
-  applyFilter() {
+  onSearchChange(event: any) {
+    this.filterPokemons();
+  }
+
+  filterPokemons() {
     if (!this.searchTerm.trim()) {
       this.filteredPokemons = [...this.pokemons];
     } else {
-      this.filteredPokemons = this.pokemons.filter(p =>
-        p.name.toLowerCase().includes(this.searchTerm)
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredPokemons = this.pokemons.filter(
+        (p) => p.name.toLowerCase().includes(term) || (p.id && p.id.toString() === term)
       );
     }
+    this.cdr.detectChanges();
   }
 
-  isPokemonFavorite(id?: number): boolean {
-    return id ? this.favoritesService.isFavorite(id) : false;
+  isFavorite(id?: number): boolean {
+    if (!id) return false;
+    return this.favoritesService.isFavorite(id);
   }
 
-  toggleFavorite(event: Event, id?: number) {
+  toggleFavorite(event: Event, pokemon: PokemonListItem) {
     event.stopPropagation();
     event.preventDefault();
-    if (id) {
-      this.favoritesService.toggleFavorite(id);
+    if (pokemon.id) {
+      this.favoritesService.toggleFavorite(pokemon.id);
       this.cdr.detectChanges();
     }
+  }
+
+  trackByPokemonId(index: number, pokemon: PokemonListItem): number {
+    return pokemon.id || index;
   }
 }

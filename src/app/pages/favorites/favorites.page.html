@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
-  <ion-toolbar color="primary">
+  <ion-toolbar color="danger">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home"></ion-back-button>
+      <ion-back-button defaultHref="/home" text="Voltar"></ion-back-button>
     </ion-buttons>
     <ion-title>Meus Favoritos</ion-title>
   </ion-toolbar>
@@ -9,28 +9,24 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
 
-  <!-- Loading State -->
   <div *ngIf="isLoading" class="ion-text-center ion-padding">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Carregando favoritos...</p>
   </div>
 
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && favoritePokemons.length === 0" class="ion-text-center ion-padding">
-    <h3>Nenhum Pokémon favoritado ainda!</h3>
-    <p>Navegue pela Pokédex e clique na estrela para adicionar Pokémons aos seus favoritos.</p>
+  <div *ngIf="!isLoading && favoritePokemons.length === 0" class="ion-text-center empty-state">
+    <h3>Nenhum Pokémon favoritado!</h3>
+    <p>Navegue pela Pokédex e clique na estrela para salvar seus preferidos.</p>
   </div>
 
-  <!-- Favorites List -->
   <ion-grid *ngIf="!isLoading && favoritePokemons.length > 0">
     <ion-row>
       <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let pokemon of favoritePokemons">
-        <ion-card [routerLink]="['/pokemon', pokemon.id]" button>
-          <div class="ion-text-center ion-padding-top">
+        <ion-card class="favorite-card" [routerLink]="['/pokemon', pokemon.id]" button>
+          <div class="img-box">
             <img 
               [src]="pokemon.sprites.other['official-artwork'].front_default" 
               [alt]="pokemon.name" 
-              style="height: 120px; object-fit: contain;" 
             />
           </div>
           <ion-card-header>
