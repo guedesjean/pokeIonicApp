@@ -1,25 +1,10 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButtons,
-  IonBackButton,
-  IonSpinner,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonButton,
-  IonIcon,
-  IonGrid,
-  IonRow,
-  IonCol
+  IonHeader, IonToolbar, IonTitle, IonContent, IonButtons,
+  IonBackButton, IonSpinner
 } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { star, starOutline } from 'ionicons/icons';
 import { PokemonService } from '../../core/services/pokemon.service';
 import { FavoritesService } from '../../core/services/favorites.service';
 import { PokemonDetail } from '../../core/models/pokemon.model';
@@ -30,24 +15,9 @@ import { PokemonDetail } from '../../core/models/pokemon.model';
   styleUrls: ['./detail.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonContent,
-    IonButtons,
-    IonBackButton,
-    IonSpinner,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonButton,
-    IonIcon,
-    IonGrid,
-    IonRow,
-    IonCol
-  ],
+    CommonModule, IonHeader, IonToolbar, IonTitle, IonContent,
+    IonButtons, IonBackButton, IonSpinner
+  ]
 })
 export class DetailPage implements OnInit {
   private route = inject(ActivatedRoute);
@@ -55,22 +25,35 @@ export class DetailPage implements OnInit {
   public favoritesService = inject(FavoritesService);
   private cdr = inject(ChangeDetectorRef);
 
-  public pokemon: PokemonDetail | null = null;
+  public pokemon?: PokemonDetail;
   public isLoading = true;
-  public errorMessage = '';
 
-  constructor() {
-    addIcons({ star, starOutline });
-  }
+  // Dicionário de tradução dos tipos (Inglês -> Português)
+  private typeTranslations: { [key: string]: string } = {
+    bug: 'Inseto',
+    dark: 'Sombrio',
+    dragon: 'Dragão',
+    electric: 'Elétrico',
+    fairy: 'Fada',
+    fighting: 'Lutador',
+    fire: 'Fogo',
+    flying: 'Voador',
+    ghost: 'Fantasma',
+    grass: 'Planta',
+    ground: 'Terrestre',
+    ice: 'Gelo',
+    normal: 'Normal',
+    poison: 'Venenoso',
+    psychic: 'Psíquico',
+    rock: 'Pedra',
+    steel: 'Aço',
+    water: 'Água'
+  };
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadPokemonDetail(id);
-    } else {
-      this.isLoading = false;
-      this.errorMessage = 'Pokémon não encontrado.';
-      this.cdr.detectChanges();
     }
   }
 
@@ -80,33 +63,17 @@ export class DetailPage implements OnInit {
       next: (data) => {
         this.pokemon = data;
         this.isLoading = false;
-        this.cdr.detectChanges(); // Força a atualização da tela
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        this.errorMessage = 'Erro ao carregar detalhes do Pokémon.';
+        console.error('Erro ao carregar detalhes:', err);
         this.isLoading = false;
         this.cdr.detectChanges();
-        console.error(err);
-      },
+      }
     });
   }
 
-  toggleFavorite() {
-    if (this.pokemon) {
-      this.favoritesService.toggleFavorite(this.pokemon.id);
-      this.cdr.detectChanges();
-    }
-  }
-
-  getTypes(): string {
-    return this.pokemon?.types.map((t) => t.type.name).join(', ') || '';
-  }
-
-  getAbilities(): string {
-    return this.pokemon?.abilities.map((a) => a.ability.name).join(', ') || '';
-  }
-
-  getMoves(): string {
-    return this.pokemon?.moves.slice(0, 5).map((m) => m.move.name).join(', ') || '';
+  getTypePt(typeName: string): string {
+    return this.typeTranslations[typeName.toLowerCase()] || typeName;
   }
 }
