@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, IonSearchbar, 
   IonGrid, IonRow, IonCol, IonButton, IonIcon, IonButtons,
-  IonInfiniteScroll, IonInfiniteScrollContent
+  IonInfiniteScroll, IonInfiniteScrollContent, IonSpinner
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { heart, heartOutline } from 'ionicons/icons';
@@ -34,7 +34,8 @@ import { PokemonListItem } from '../core/models/pokemon.model';
     IonIcon,
     IonButtons,
     IonInfiniteScroll,
-    IonInfiniteScrollContent
+    IonInfiniteScrollContent,
+    IonSpinner
   ]
 })
 export class HomePage implements OnInit {
@@ -42,66 +43,168 @@ export class HomePage implements OnInit {
   public favoritesService = inject(FavoritesService);
   private cdr = inject(ChangeDetectorRef);
 
+  // Lista da paginação na tela
   public pokemons: PokemonListItem[] = [];
   public filteredPokemons: PokemonListItem[] = [];
+  
+  // Banco completo vindo da PokéAPI para buscas
+  private allApiPokemons: PokemonListItem[] = [];
+
   public searchTerm: string = '';
+  public isSearching: boolean = false;
+  public isLoadingSearch: boolean = false;
+
   private offset = 0;
   private limit = 20;
 
   constructor() {
-    // Registra explicitamente os ícones de coração
     addIcons({ heart, heartOutline });
   }
 
   ngOnInit() {
-    this.loadPokemons();
+    this.loadPaginatedPokemons();
+    this.fetchAllPokemonsFromApi();
   }
 
-  loadPokemons(event?: any) {
+  
+  loadPaginatedPokemons(event?: any) {
+    if (this.isSearching) {
+      if (event) event.target.complete();
+      return;
+    }
+
     this.pokemonService.getPokemonList(this.offset, this.limit).subscribe({
       next: (res) => {
-        const newPokemons = res.results.map((item) => {
-          const urlParts = item.url.split('/').filter(Boolean);
-          const id = parseInt(urlParts[urlParts.length - 1], 10);
-          return { ...item, id };
+        const newItems = res.results.map((item) => {
+          const parts = item.url.split('/').filter(Boolean);
+          const id = parseInt(parts[parts.length - 1], 10);
+          return { name: item.name, url: item.url, id };
         });
 
-        this.pokemons = [...this.pokemons, ...newPokemons];
-        this.filterPokemons();
-        this.offset += this.limit;
+        const map = new Map(this.pokemons.map(p => [p.id, p]));
+        newItems.forEach(p => map.set(p.id, p));
+        this.pokemons = Array.from(map.values());
 
-        if (event) {
-          event.target.complete();
+        if (!this.isSearching) {
+          this.filteredPokemons = [...this.pokemons];
         }
+
+        this.offset += this.limit;
+        if (event) event.target.complete();
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erro ao carregar lista:', err);
-        if (event) {
-          event.target.complete();
-        }
+        console.error('Erro ao carregar Pokémons da API:', err);
+        if (event) event.target.complete();
         this.cdr.detectChanges();
       }
     });
   }
 
+  private fetchAllPokemonsFromApi() {
+    this.pokemonService.getPokemonList(0, 10000).subscribe({
+      next: (res) => {
+        this.allApiPokemons = res.results.map((item) => {
+          const parts = item.url.split('/').filter(Boolean);
+          const id = parseInt(parts[parts.length - 1], 10);
+          return { name: item.name, url: item.url, id };
+        });
+      },
+      error: (err) => {
+        console.error('Erro ao carregar índice da PokéAPI:', err);
+      }
+    });
+  }
+
   loadMore(event: any) {
-    this.loadPokemons(event);
+    this.loadPaginatedPokemons(event);
   }
 
-  onSearchChange(event: any) {
-    this.filterPokemons();
-  }
+  // 3. Executado ao clicar no botão "Buscar" ou dar Enter
+  onSearchSubmit() {
+    const term = this.searchTerm.trim().toLowerCase();
 
-  filterPokemons() {
-    if (!this.searchTerm.trim()) {
-      this.filteredPokemons = [...this.pokemons];
-    } else {
-      const term = this.searchTerm.toLowerCase().trim();
-      this.filteredPokemons = this.pokemons.filter(
-        (p) => p.name.toLowerCase().includes(term) || (p.id && p.id.toString() === term)
-      );
+    if (!term) {
+      this.onSearchClear();
+      return;
     }
+
+    this.isSearching = true;
+    this.isLoadingSearch = true;
+    this.cdr.detectChanges();
+
+    const localMatches = this.pokemons.filter(pokemon => {
+      const nameMatch = pokemon.name ? pokemon.name.toLowerCase().includes(term) : false;
+      const idMatch = pokemon.id ? pokemon.id.toString() === term : false;
+      return nameMatch || idMatch;
+    });
+
+    if (localMatches.length > 0) {
+
+
+      this.filteredPokemons = localMatches;
+      this.isLoadingSearch = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.pokemonService.getPokemonDetail(term).subscribe({
+      next: (data) => {
+        this.filteredPokemons = [{
+          name: data.name,
+          url: `https://pokeapi.co/api/v2/pokemon/${data.id}/`,
+          id: data.id
+        }];
+        this.isLoadingSearch = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+
+        this.pokemonService.getPokemonList(0, 1200).subscribe({
+          next: (res) => {
+            const apiMatches = res.results
+              .map(item => {
+                const parts = item.url.split('/').filter(Boolean);
+                const id = parseInt(parts[parts.length - 1], 10);
+                return { name: item.name, url: item.url, id };
+              })
+              .filter(pokemon => {
+                const nameMatch = pokemon.name.toLowerCase().includes(term);
+                const idMatch = pokemon.id.toString() === term;
+                return nameMatch || idMatch;
+              });
+
+            this.filteredPokemons = apiMatches;
+            this.isLoadingSearch = false;
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Erro ao consultar PokéAPI:', err);
+            this.filteredPokemons = [];
+            this.isLoadingSearch = false;
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    });
+  }
+
+  private executeFilter(term: string) {
+    const source = this.allApiPokemons.length > 0 ? this.allApiPokemons : this.pokemons;
+
+    this.filteredPokemons = source.filter((pokemon) => {
+      const nameMatch = pokemon.name ? pokemon.name.toLowerCase().includes(term) : false;
+      const idMatch = pokemon.id ? pokemon.id.toString() === term : false;
+      return nameMatch || idMatch;
+    });
+  }
+
+  // Limpa a busca e volta para a lista paginada
+  onSearchClear() {
+    this.searchTerm = '';
+    this.isSearching = false;
+    this.isLoadingSearch = false;
+    this.filteredPokemons = [...this.pokemons];
     this.cdr.detectChanges();
   }
 
