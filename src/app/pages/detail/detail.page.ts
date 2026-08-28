@@ -9,6 +9,8 @@ import { PokemonService } from '../../core/services/pokemon.service';
 import { FavoritesService } from '../../core/services/favorites.service';
 import { PokemonDetail } from '../../core/models/pokemon.model';
 
+
+
 @Component({
   selector: 'app-detail',
   templateUrl: './detail.page.html',
@@ -20,11 +22,13 @@ import { PokemonDetail } from '../../core/models/pokemon.model';
   ]
 })
 export class DetailPage implements OnInit {
+  // Pega a rota atual para saber qual ID foi passado no clique
   private route = inject(ActivatedRoute);
   private pokemonService = inject(PokemonService);
   public favoritesService = inject(FavoritesService);
   private cdr = inject(ChangeDetectorRef);
 
+  // Guarda os dados completos do Pokémon carregado
   public pokemon?: PokemonDetail;
   public isLoading = true;
 

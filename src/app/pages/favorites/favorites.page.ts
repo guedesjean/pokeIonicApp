@@ -7,11 +7,11 @@ import {
   IonButton, IonIcon, IonSpinner
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { star, starOutline } from 'ionicons/icons';
 import { PokemonService } from '../../core/services/pokemon.service';
 import { FavoritesService } from '../../core/services/favorites.service';
 import { PokemonDetail } from '../../core/models/pokemon.model';
 import { forkJoin, Observable } from 'rxjs';
+import { heart, heartOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-favorites',
@@ -29,21 +29,24 @@ export class FavoritesPage implements OnInit {
   public favoritesService = inject(FavoritesService);
   private cdr = inject(ChangeDetectorRef);
 
+  // Lista dos salvos
   public favoritePokemons: PokemonDetail[] = [];
   public isLoading = true;
 
   constructor() {
-    addIcons({ star, starOutline });
+    addIcons({ heart, heartOutline });
   }
 
   ngOnInit() {
     this.loadFavorites();
   }
 
+  // Recarrega sempre que entrar na tela
   ionViewWillEnter() {
     this.loadFavorites();
   }
 
+  // Busca as informações dos Pokémons salvos
   loadFavorites() {
     const favoriteIds: number[] = this.favoritesService.getFavoritesList();
     if (!favoriteIds || favoriteIds.length === 0) {
@@ -72,6 +75,7 @@ export class FavoritesPage implements OnInit {
     });
   }
 
+  // Remove dos favoritos
   removeFavorite(event: Event, id: number) {
     event.stopPropagation();
     event.preventDefault();

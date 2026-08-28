@@ -33,7 +33,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <ion-card-title>#{{ pokemon.id }} {{ pokemon.name | titlecase }}</ion-card-title>
               <ion-button fill="clear" size="small" (click)="removeFavorite($event, pokemon.id)">
-                <ion-icon name="star" color="warning"></ion-icon>
+                <ion-icon name="heart" color="danger"></ion-icon>
               </ion-button>
             </div>
           </ion-card-header>

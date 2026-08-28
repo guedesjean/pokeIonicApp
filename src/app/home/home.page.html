@@ -1,13 +1,15 @@
+<!-- Topo da página com título e botão de favoritos -->
 <ion-header [translucent]="true">
   <ion-toolbar color="danger">
     <ion-title class="ion-text-center">Pokédex TCG</ion-title>
     <ion-buttons slot="end">
-      <ion-button routerLink="/favorites" class="header-fav-btn" title="Ir para os favoritos" aria-label="Ir para os favoritos">
+      <ion-button routerLink="/favorites">
         <ion-icon name="heart" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 
+  <!-- Campo de busca -->
   <ion-toolbar color="danger">
     <div class="search-container">
       <ion-searchbar 
@@ -26,29 +28,33 @@
 
 <ion-content [fullscreen]="true" class="tcg-bg ion-padding">
 
-  <!-- Spinner durante busca na API -->
+  <!-- Animação de carregando -->
   <div *ngIf="isLoadingSearch" class="ion-text-center ion-padding">
     <ion-spinner name="crescent" color="light"></ion-spinner>
     <p style="color: #fff;">Buscando na PokéAPI...</p>
   </div>
 
-  <!-- Mensagem caso não encontre nada -->
+  <!-- Mensagem quando não acha nada -->
   <div *ngIf="!isLoadingSearch && isSearching && filteredPokemons.length === 0" class="ion-text-center ion-padding">
     <p style="color: #fff; font-weight: bold;">Nenhum Pokémon encontrado para "{{ searchTerm }}"</p>
     <ion-button fill="outline" color="light" size="small" (click)="onSearchClear()">Limpar busca</ion-button>
   </div>
 
+  <!-- Lista de cartas -->
   <ion-grid *ngIf="!isLoadingSearch">
     <ion-row>
       <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let pokemon of filteredPokemons; trackBy: trackByPokemonId">
         
+        <!-- Carta do Pokémon -->
         <div class="tcg-card" [routerLink]="['/pokemon', pokemon.id]">
           
+          <!-- Nome e HP -->
           <div class="card-header-tcg">
             <span class="card-name">{{ pokemon.name | uppercase }}</span>
             <span class="card-hp"><small>HP</small> {{ (pokemon.id || 0) * 10 }}</span>
           </div>
 
+          <!-- Imagem oficial -->
           <div class="card-image-box">
             <img 
               [src]="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/' + pokemon.id + '.png'" 
@@ -57,10 +63,12 @@
             />
           </div>
 
+          <!-- Número da Pokedex -->
           <div class="card-info-bar">
             <span>NO. {{ (pokemon.id || 0) | number:'3.0-0' }}</span>
           </div>
 
+          <!-- Detalhes do ataque -->
           <div class="card-body-tcg">
             <div class="attack-row">
               <span class="energy-icon">★</span>
@@ -69,6 +77,7 @@
             </div>
           </div>
 
+          <!-- Botão de favoritar -->
           <div class="card-footer-tcg">
             <span>ilus. PokeAPI</span>
             <button 
@@ -87,6 +96,7 @@
     </ion-row>
   </ion-grid>
 
+  <!-- Rolagem infinita para carregar mais -->
   <ion-infinite-scroll *ngIf="!isSearching" (ionInfinite)="loadMore($event)">
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Carregando mais cartas...">
     </ion-infinite-scroll-content>
